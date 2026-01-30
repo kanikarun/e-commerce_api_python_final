@@ -30,10 +30,10 @@ import model
 
 import route
 
-# @app.get('/')
-# @app.get('/home')
-# def home():
-#     return render_template('home.html')
+@app.get('/')
+@app.get('/home')
+def home():
+    return render_template('home.html')
 
 
 

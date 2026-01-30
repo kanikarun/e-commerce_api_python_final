@@ -100,7 +100,7 @@ def get_cart_list():
     }), 200
 
 
-@app.put('/api/cart/<int:item_id>')
+@app.put('/api/cart/update/<int:item_id>')
 @jwt_required()
 def update_cart_item(item_id):
     customer_id = get_jwt_identity()
@@ -144,7 +144,7 @@ def update_cart_item(item_id):
     }), 200
 
 
-@app.delete('/api/cart/<int:item_id>')
+@app.delete('/api/cart/delete/<int:item_id>')
 @jwt_required()
 def delete_cart_item(item_id):
     customer_id = get_jwt_identity()

@@ -88,7 +88,13 @@ def update_category(category_id):
     category.name = name
     db.session.commit()
 
-    return jsonify({'message': 'Category updated successfully'})
+    return jsonify({
+        'message': 'Category updated successfully',
+        'category': {
+            'id': category.id,
+            'name': category.name
+        }
+    })
 
 @app.delete('/admin/category/delete/<int:category_id>')
 @jwt_required()

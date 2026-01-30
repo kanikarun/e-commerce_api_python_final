@@ -74,28 +74,22 @@ def create_customer():
 def login():
     data = request.get_json()
     username = (data.get("username") or "").strip()
-    password = (data.get("password") or "")
+    password = data.get("password") or ""
 
-    customer = Customer.query.filter_by(username=username).first()
-    if not customer:
-        return jsonify({"message": "Invalid username or password"}), 401
-    else:
+    customers = Customer.query.filter_by(username=username).all()
+
+    if not customers:
+        return jsonify({'message': 'Invalid username or password'}), 401
+
+    for customer in customers:
         if check_password_hash(customer.password, password):
-            access = create_access_token(
-                identity=str(customer.id),
-                additional_claims= {
-                    "customer_id": str(customer.id),
-                    "username": str(customer.username),
+            access = create_access_token(identity=str(customer.id))
+            return jsonify({
+                'message': 'Login successful',
+                'access_token': access
+            }), 200
 
-
-                }
-            )
-            return jsonify(
-                message="Login successful",
-                access_token=access
-            )
-        else:
-            return jsonify({"message": "Invalid username or password"}), 401
+    return jsonify({'message': 'Invalid username or password'}), 401
 
 @app.post('/logout')
 @jwt_required()
@@ -104,11 +98,7 @@ def logout():
     claims = get_jwt()
 
     return jsonify({
-        "message": "Logout successful",
-        "customer": {
-            'id': customer_id,
-            'username': claims.get("username"),
-        }
+        "message": "Logout successful"
 
     }), 200
 

@@ -157,8 +157,9 @@ def admin_update_customer(customer_id):
 @app.delete('/admin/customer/delete/<int:customer_id>')
 @jwt_required()
 def admin_delete_customer(customer_id):
+    identity = get_jwt_identity()
+    current_user = json.loads(identity) if isinstance(identity, str) else identity
 
-    current_user = json.loads(get_jwt_identity())
     if current_user.get('role') != 'admin':
         return jsonify({'message': 'Admin access required'}), 403
 
@@ -166,9 +167,15 @@ def admin_delete_customer(customer_id):
     if not customer:
         return jsonify({'message': 'Customer not found'}), 404
 
+    # 🔒 FIX: check cart first
+    if customer.carts:
+        return jsonify({
+            'message': 'Cannot delete customer with active cart items'
+        }), 409
+
     db.session.delete(customer)
     db.session.commit()
 
     return jsonify({
-        'message': 'Customer deleted successfully',
+        'message': 'Customer deleted successfully'
     }), 200

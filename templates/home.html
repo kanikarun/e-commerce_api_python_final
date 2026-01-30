@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fake Store API</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+
+
+</head>
+
+<body>
+<div class="container">
+
+  <!-- ================= SIDEBAR ================= -->
+  <div class="sidebar">
+      <h2>Front Panel</h2>
+      <hr>
+    <div class="sidebar-section">
+      <!-- PRODUCTS (DROPDOWN) -->
+      <div class="dropdown-container">
+        <div class="section-title">
+            <i class="fas fa-box"></i>
+            <span>Product</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="dropdown-menu">
+          <div class="method-item" onclick="loadEndpoint('get-all-products')">
+            <span class="method-badge method-get">GET</span>
+            <span class="method-text">Get all products</span>
+          </div>
+
+          <div class="method-item" onclick="loadEndpoint('get-product-by-category')">
+            <span class="method-badge method-get">GET</span>
+            <span class="method-text">Get product by category</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- CART -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-shopping-cart"></i>
+      <span>Cart</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+      <div class="method-item" onclick="loadEndpoint('add-to-cart')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Add a new cart</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('get-cart-list')">
+        <span class="method-badge method-get">GET</span>
+        <span class="method-text">Get all cart</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('update-cart-item')">
+        <span class="method-badge method-put">PUT</span>
+        <span class="method-text">Update a cart</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('delete-cart-item')">
+        <span class="method-badge method-del">DELETE</span>
+        <span class="method-text">Delete a cart</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+    <!-- CHECKOUT -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-cash-register"></i>
+      <span>Checkout</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+      <div class="method-item" onclick="loadEndpoint('checkout')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Checkout</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+    <!-- ORDER -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-receipt"></i>
+      <span>Order</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+      <div class="method-item" onclick="loadEndpoint('track-order')">
+        <span class="method-badge method-get">GET</span>
+        <span class="method-text">Get a order</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+    <!-- AUTH -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-lock"></i>
+      <span>Auth</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+      <div class="method-item" onclick="loadEndpoint('create-customer')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Customer register</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('customer-login')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Customer login</span>
+      </div>
+        <div class="method-item" onclick="loadEndpoint('customer-logout')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Customer logout</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+      <h2>Admin Panel</h2>
+      <hr>
+      <!-- CATEGORY -->
+    <div class="sidebar-section">
+
+      <div class="dropdown-container">
+        <div class="section-title">
+            <i class="fas fa-tags"></i>
+            <span>Category</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="dropdown-menu">
+            <div class="method-item" onclick="loadEndpoint('get_categories')">
+            <span class="method-badge method-get">GET</span>
+            <span class="method-text">Get all Category</span>
+          </div>
+            <div class="method-item" onclick="loadEndpoint('update_category')">
+            <span class="method-badge method-put">PUT</span>
+            <span class="method-text">Update a category</span>
+          </div>
+            <div class="method-item" onclick="loadEndpoint('delete_category')">
+            <span class="method-badge method-del">DELETE</span>
+            <span class="method-text">Delete a Category</span>
+          </div>
+            <div class="method-item" onclick="loadEndpoint('create_category')">
+            <span class="method-badge method-post">POST</span>
+            <span class="method-text">Add a new category</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PRODUCT -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-box"></i>
+      <span>Product</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+      <div class="method-item" onclick="loadEndpoint('create_product')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Add a new product</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('update_product')">
+        <span class="method-badge method-put">PUT</span>
+        <span class="method-text">Update a product</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('update_product_by_id')">
+        <span class="method-badge method-put">PUT</span>
+        <span class="method-text">Update a product by id</span>
+      </div>
+
+      <div class="method-item" onclick="loadEndpoint('delete_product')">
+        <span class="method-badge method-del">DELETE</span>
+        <span class="method-text">Delete a product</span>
+      </div>
+        <div class="method-item" onclick="loadEndpoint('delete_product_by_id')">
+        <span class="method-badge method-del">DELETE</span>
+        <span class="method-text">Delete a product by id</span>
+      </div>
+        <div class="method-item" onclick="loadEndpoint('admin_get_products')">
+        <span class="method-badge method-get">GET</span>
+        <span class="method-text">Get all product</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+    <!-- User -->
+    <div class="sidebar-section">
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-user"></i>
+      <span>User</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+      <div class="method-item" onclick="loadEndpoint('admin_get_customers')">
+        <span class="method-badge method-get">GET</span>
+        <span class="method-text">Get all customer</span>
+      </div>
+      <div class="method-item" onclick="loadEndpoint('admin_update_customer')">
+        <span class="method-badge method-put">PUT</span>
+        <span class="method-text">Update a customer</span>
+      </div>
+      <div class="method-item" onclick="loadEndpoint('admin_delete_customer')">
+        <span class="method-badge method-del">DELETE</span>
+        <span class="method-text">Update a customer</span>
+      </div>
+      <div class="method-item" onclick="loadEndpoint('admin_create_customer')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Add a new customer</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+    <!-- ORDER -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-receipt"></i>
+      <span>Order</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+        <div class="method-item" onclick="loadEndpoint('admin_get_orders')">
+        <span class="method-badge method-get">GET</span>
+        <span class="method-text">Get all order</span>
+      </div>
+        <div class="method-item" onclick="loadEndpoint('admin_get_order_detail')">
+        <span class="method-badge method-get">GET</span>
+        <span class="method-text">Get a order detail</span>
+      </div>
+        <div class="method-item" onclick="loadEndpoint('admin_update_order')">
+        <span class="method-badge method-put">PUT</span>
+        <span class="method-text">Update a order</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+    <!-- AUTH -->
+    <div class="sidebar-section">
+
+  <div class="dropdown-container">
+    <div class="section-title">
+      <i class="fas fa-lock"></i>
+      <span>Auth</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="dropdown-menu">
+
+
+      <div class="method-item" onclick="loadEndpoint('admin_login')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Admin login</span>
+      </div>
+        <div class="method-item" onclick="loadEndpoint('admin_logout')">
+        <span class="method-badge method-post">POST</span>
+        <span class="method-text">Admin logout</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  </div>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="main-content">
+  <div class="form-content" id="form-tab">
+    <div class="form-header">
+        <h2 id="endpointTitle">API Endpoint</h2>
+        <p id="endpointDesc">Select an endpoint from the sidebar</p>
+        <div>
+            <span id="endpointMethod" class="method"></span>
+            <span id="endpoint"></span>
+
+        </div>
+
+    </div>
+
+    <div id="requestBody" class="api-section" style="display:none;">
+        <div>
+            <h3>Request Body Schema:</h3>
+            <span>application/json</span>
+        </div>
+
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="requestBodyFields"></tbody>
+      </table>
+    </div>
+
+    <div id="responses" class="api-section" style="display:none;">
+      <h3>Responses</h3>
+      <div id="responseList"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+
+const apiEndpoints = {
+  'add-product': {
+    title: 'Add a new product',
+    description: 'Create a new product.',
+      endpoint: '/admin/product/create',
+      method: 'POST',
+    requestBody: [
+      { field: 'id', type: 'integer' },
+      { field: 'title', type: 'string' },
+      { field: 'price', type: 'number <float>' },
+      { field: 'description', type: 'string' },
+      { field: 'category', type: 'string' },
+      { field: 'image', type: 'string <uri>' }
+    ],
+    responses: [
+      { code: 201, message: 'Product created successfully', type: 'success' },
+      { code: 400, message: 'Bad request', type: 'error' }
+    ]
+  },
+
+    'get-all-products': {
+    title: 'Get all products',
+    description: 'Retrieve all products from the store.',
+      endpoint: '/product/list',
+      method: 'GET',
+    requestBody: [],
+    responses: [
+      { code: 200, message: 'Success', type: 'success' }
+    ]
+  },
+
+    'get-product-by-category': {
+    title: 'Get a single product',
+    description: 'Retrieve product details by Category.',
+      endpoint: '/product/list/category',
+      method: 'GET',
+    requestBody: [{ field: 'category_name', type: 'string' }],
+    responses: [
+      { code: 200, message: 'Success', type: 'success' },
+      { code: 404, message: 'Product not found', type: 'error' }
+    ]
+  },
+
+    'add-to-cart': {
+  title: 'Add product to cart',
+  description: 'Add a product to the customer cart or increase quantity if it already exists.',
+  endpoint: '/api/cart',
+  method: 'POST',
+
+  requestBody: [
+    { field: 'product_id', type: 'integer', required: true },
+    { field: 'qty', type: 'integer (default: 1)', required: false }
+  ],
+
+  responses: [
+    { code: 200, message: 'Product added to cart successfully', type: 'success' },
+    { code: 400, message: 'Invalid input or insufficient stock', type: 'error' },
+    { code: 404, message: 'Product not found', type: 'error' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ]
+},
+
+    'get-cart-list': {
+  title: 'Get cart items',
+  description: 'Retrieve all items in the authenticated customer cart.',
+  endpoint: '/api/cart/list',
+  method: 'GET',
+
+  requestBody: [],
+
+  responses: [
+    { code: 200, message: 'Cart retrieved successfully', type: 'success' },
+    { code: 200, message: 'Cart is empty', type: 'info' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ],
+
+  auth: true
+},
+
+    'update-cart-item': {
+  title: 'Update cart item quantity',
+  description: 'Update the quantity of a specific cart item for the authenticated customer.',
+  endpoint: '/api/cart/update/{item_id}',
+  method: 'PUT',
+
+  pathParams: [
+    { field: 'item_id', type: 'integer', required: true }
+  ],
+
+  requestBody: [
+    { field: 'qty', type: 'integer (> 0)', required: true }
+  ],
+
+  responses: [
+    { code: 200, message: 'Cart item updated successfully', type: 'success' },
+    { code: 400, message: 'Invalid quantity or insufficient stock', type: 'error' },
+    { code: 404, message: 'Cart item or product not found', type: 'error' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ],
+
+  auth: true
+},
+
+    'delete-cart-item': {
+  title: 'Delete cart item',
+  description: 'Remove a specific item from the authenticated customer cart.',
+  endpoint: '/api/cart/delete/{item_id}',
+  method: 'DELETE',
+
+  pathParams: [
+    { field: 'item_id', type: 'integer', required: true }
+  ],
+
+  requestBody: [],
+
+  responses: [
+    { code: 200, message: 'Cart item deleted successfully', type: 'success' },
+    { code: 404, message: 'Cart item not found', type: 'error' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ],
+
+  auth: true
+},
+
+    'checkout': {
+  title: 'Checkout cart',
+  description: 'Create an order from the authenticated customer cart, deduct stock, and clear the cart.',
+  endpoint: '/api/checkout',
+  method: 'POST',
+
+  requestBody: [],
+
+  responses: [
+    { code: 201, message: 'Checkout successful', type: 'success' },
+    { code: 400, message: 'Cart is empty or insufficient stock', type: 'error' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ],
+
+  auth: true
+},
+
+    'track-order': {
+  title: 'Track order',
+  description: 'Retrieve order details for the authenticated customer.',
+  endpoint: '/order/{order_id}',
+  method: 'GET',
+
+  pathParams: [
+    { field: 'order_id', type: 'integer', required: true }
+  ],
+
+  requestBody: [],
+
+  responses: [
+    { code: 200, message: 'Order retrieved successfully', type: 'success' },
+    { code: 400, message: 'Invalid customer token', type: 'error' },
+    { code: 403, message: 'Forbidden (order does not belong to user)', type: 'error' },
+    { code: 404, message: 'Order not found', type: 'error' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ],
+
+  auth: true
+},
+
+    'create-customer': {
+  title: 'Create customer account',
+  description: 'Register a new customer with username and password.',
+  endpoint: '/create-customer',
+  method: 'POST',
+
+  requestBody: [
+    { field: 'username', type: 'string', required: true },
+    { field: 'password', type: 'string', required: true }
+  ],
+
+  responses: [
+    { code: 200, message: 'Customer created successfully', type: 'success' },
+    { code: 400, message: 'Invalid input or weak password', type: 'error' }
+  ],
+
+  auth: false
+},
+
+    'customer-login': {
+  title: 'Customer login',
+  description: 'Authenticate customer using username and password and return a JWT access token.',
+  endpoint: '/login',
+  method: 'POST',
+
+  requestBody: [
+    { field: 'username', type: 'string', required: true },
+    { field: 'password', type: 'string', required: true }
+  ],
+
+  responses: [
+    { code: 200, message: 'Login successful', type: 'success' },
+    { code: 401, message: 'Invalid username or password', type: 'error' }
+  ],
+
+  auth: false
+},
+
+    'customer-logout': {
+  title: 'Customer logout',
+  description: 'Logout the authenticated customer (client-side token invalidation).',
+  endpoint: '/logout',
+  method: 'POST',
+
+  requestBody: [],
+
+  responses: [
+    { code: 200, message: 'Logout successful', type: 'success' },
+    { code: 401, message: 'Unauthorized (JWT required)', type: 'error' }
+  ],
+
+  auth: true
+},
+
+    'create_category' : {
+    'title': 'Create Category',
+    'description': 'Create a new category. Admin access required.',
+    'endpoint': '/admin/category/create',
+    'method': 'POST',
+    'requestBody': [
+        {'field': 'name', 'type': 'string', 'required': true}
+    ],
+    'responses': [
+        {'code': 201, 'message': 'Category created successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Category name is required or already exists', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'get_categories' : {
+    'title': 'Get Categories',
+    'description': 'Retrieve the list of all categories. Admin access required.',
+    'endpoint': '/admin/category/list/',
+    'method': 'GET',
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Returns list of categories', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Category list is empty', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'update_category' : {
+    'title': 'Update Category',
+    'description': 'Update an existing category by ID. Admin access required.',
+    'endpoint': '/admin/category/update/<int:category_id>',
+    'method': 'PUT',
+    'requestBody': [
+        {'field': 'name', 'type': 'string', 'required': true}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Category updated successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Category name missing or already exists', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Category not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'delete_category' : {
+    'title': 'Delete Category',
+    'description': 'Delete a category by ID. Admin access required. Cannot delete if category contains products.',
+    'endpoint': '/admin/category/delete/<int:category_id>',
+    'method': 'DELETE',
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Category deleted successfully', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Category not found', 'type': 'error'},
+        {'code': 409, 'message': 'Cannot delete category because it contains products', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'create_product' : {
+    'title': 'Create Product',
+    'description': 'Create a new product. Admin access required.',
+    'endpoint': '/admin/product/create',
+    'method': 'POST',
+    'requestBody': [
+        {'field': 'title', 'type': 'string', 'required': true},
+        {'field': 'price', 'type': 'float', 'required': true},
+        {'field': 'cost', 'type': 'float', 'required': true},
+        {'field': 'stock', 'type': 'integer', 'required': true},
+        {'field': 'description', 'type': 'string', 'required': false},
+        {'field': 'category_id', 'type': 'integer', 'required': true},
+        {'field': 'image', 'type': 'file', 'required': false}
+    ],
+    'responses': [
+        {'code': 201, 'message': 'Product created successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Missing or invalid fields / product title already exists', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Category not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'update_product' : {
+    'title': 'Update Product',
+    'description': 'Update an existing product. Admin access required.',
+    'endpoint': '/admin/product/update',
+    'method': 'PUT',
+    'requestBody': [
+        {'field': 'id', 'type': 'integer', 'required': true},
+        {'field': 'title', 'type': 'string', 'required': false},
+        {'field': 'price', 'type': 'float', 'required': false},
+        {'field': 'cost', 'type': 'float', 'required': false},
+        {'field': 'stock', 'type': 'integer', 'required': false},
+        {'field': 'description', 'type': 'string', 'required': false},
+        {'field': 'category_id', 'type': 'integer', 'required': false},
+        {'field': 'image', 'type': 'file', 'required': false}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Product updated successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Missing or invalid fields / duplicate title / invalid numbers', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Product or category not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'update_product_by_id' : {
+    'title': 'Update Product by ID',
+    'description': 'Update an existing product by its ID. Admin access required.',
+    'endpoint': '/admin/product/update/<int:id>',
+    'method': 'PUT',
+    'pathParameters': [
+        {'field': 'id', 'type': 'integer', 'required': true, 'description': 'ID of the product to update'}
+    ],
+    'requestBody': [
+        {'field': 'title', 'type': 'string', 'required': false},
+        {'field': 'price', 'type': 'float', 'required': false},
+        {'field': 'cost', 'type': 'float', 'required': false},
+        {'field': 'stock', 'type': 'integer', 'required': false},
+        {'field': 'description', 'type': 'string', 'required': false},
+        {'field': 'category_id', 'type': 'integer', 'required': false},
+        {'field': 'image', 'type': 'file', 'required': false}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Product updated successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Invalid field values (e.g., price not a number)', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Product or category not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'delete_product_by_id' : {
+    'title': 'Delete Product by ID',
+    'description': 'Delete a product by its ID. Admin access required. Old image file will be removed if it exists.',
+    'endpoint': '/admin/product/delete/<int:id>',
+    'method': 'DELETE',
+    'pathParameters': [
+        {'field': 'id', 'type': 'integer', 'required': true, 'description': 'ID of the product to delete'}
+    ],
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Product deleted successfully', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Product not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'delete_product' : {
+    'title': 'Delete Product',
+    'description': 'Delete a product by ID. Admin access required. ID can be sent in JSON body or form-data. Old image will be removed if it exists.',
+    'endpoint': '/admin/product/delete',
+    'method': 'DELETE',
+    'requestBody': [
+        {'field': 'id', 'type': 'integer', 'required': true}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Product deleted successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Product ID missing or invalid', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Product not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_get_products' : {
+    'title': 'Get All Products (Admin)',
+    'description': 'Retrieve a list of all products. Admin access required.',
+    'endpoint': '/admin/product/list',
+    'method': 'GET',
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Returns a list of products', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_get_customers' : {
+    'title': 'Get All Customers (Admin)',
+    'description': 'Retrieve a list of all customers. Admin access required. Returns empty list if no customers exist.',
+    'endpoint': '/admin/customer/list',
+    'method': 'GET',
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Returns a list of customers (empty if none)', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_create_customer' : {
+    'title': 'Create Customer (Admin)',
+    'description': 'Create a new customer account. Admin access required. Password is validated.',
+    'endpoint': '/admin/create-customer',
+    'method': 'POST',
+    'requestBody': [
+        {'field': 'username', 'type': 'string', 'required': true},
+        {'field': 'password', 'type': 'string', 'required': true}
+    ],
+    'responses': [
+        {'code': 201, 'message': 'Customer created successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Missing username or password / password validation failed', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_update_customer' : {
+    'title': 'Update Customer (Admin)',
+    'description': 'Update an existing customer. Admin access required. Password is validated if provided.',
+    'endpoint': '/admin/customer/update/<int:customer_id>',
+    'method': 'PUT',
+    'pathParameters': [
+        {'field': 'customer_id', 'type': 'integer', 'required': true, 'description': 'ID of the customer to update'}
+    ],
+    'requestBody': [
+        {'field': 'username', 'type': 'string', 'required': false},
+        {'field': 'password', 'type': 'string', 'required': false}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Customer updated successfully', 'type': 'success'},
+        {'code': 400, 'message': 'Request body missing or password validation failed', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Customer not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_delete_customer' : {
+    'title': 'Delete Customer (Admin)',
+    'description': 'Delete a customer by ID. Admin access required. Cannot delete if customer has active cart items.',
+    'endpoint': '/admin/customer/delete/<int:customer_id>',
+    'method': 'DELETE',
+    'pathParameters': [
+        {'field': 'customer_id', 'type': 'integer', 'required': true, 'description': 'ID of the customer to delete'}
+    ],
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Customer deleted successfully', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Customer not found', 'type': 'error'},
+        {'code': 409, 'message': 'Cannot delete customer with active cart items', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_get_orders' : {
+    'title': 'Get All Orders (Admin)',
+    'description': 'Retrieve a list of all orders with their details. Admin access required. Returns empty list if no orders exist.',
+    'endpoint': '/admin/order',
+    'method': 'GET',
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Returns a list of orders (empty if none)', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_get_order_detail' : {
+    'title': 'Get Order Detail (Admin)',
+    'description': 'Retrieve the details of a specific order by its ID. Admin access required.',
+    'endpoint': '/admin/order/detail/<int:order_id>',
+    'method': 'GET',
+    'pathParameters': [
+        {'field': 'order_id', 'type': 'integer', 'required': true, 'description': 'ID of the order to retrieve'}
+    ],
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Returns the order with detailed items', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Order not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_update_order' : {
+    'title': 'Update Order (Admin)',
+    'description': 'Update an order’s status, payment, or payment method. Admin access required. At least one field is required.',
+    'endpoint': '/admin/order/update/<int:order_id>',
+    'method': 'PUT',
+    'pathParameters': [
+        {'field': 'order_id', 'type': 'integer', 'required': true, 'description': 'ID of the order to update'}
+    ],
+    'requestBody': [
+        {'field': 'status', 'type': 'string', 'required': false},
+        {'field': 'paid', 'type': 'boolean', 'required': false},
+        {'field': 'paid_by', 'type': 'string', 'required': false}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Order updated successfully', 'type': 'success'},
+        {'code': 400, 'message': 'At least one field required / invalid paid value', 'type': 'error'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'},
+        {'code': 404, 'message': 'Order not found', 'type': 'error'}
+    ],
+    'auth': true
+},
+
+    'admin_login' : {
+    'title': 'Admin Login',
+    'description': 'Authenticate an admin user and return a JWT access token.',
+    'endpoint': '/admin/login',
+    'method': 'POST',
+    'requestBody': [
+        {'field': 'username', 'type': 'string', 'required': true},
+        {'field': 'password', 'type': 'string', 'required': true}
+    ],
+    'responses': [
+        {'code': 200, 'message': 'Login successful, returns JWT token', 'type': 'success'},
+        {'code': 401, 'message': 'Invalid username or password', 'type': 'error'}
+    ],
+    'auth': false
+},
+
+    'admin_logout' : {
+    'title': 'Admin Logout',
+    'description': 'Logs out the currently authenticated admin user. Requires valid JWT token.',
+    'endpoint': '/admin/logout',
+    'method': 'POST',
+    'requestBody': [],
+    'responses': [
+        {'code': 200, 'message': 'Logout successful', 'type': 'success'},
+        {'code': 403, 'message': 'Admin access required', 'type': 'error'}
+    ],
+    'auth': true
+}
+
+
+
+
+
+
+
+};
+
+function loadEndpoint(endpointKey) {
+  const endpoint = apiEndpoints[endpointKey];
+  if (!endpoint) return;
+
+
+  document.querySelectorAll('.method-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  event.currentTarget.classList.add('active');
+
+  document.getElementById('endpointTitle').textContent = endpoint.title;
+  document.getElementById('endpointDesc').textContent = endpoint.description;
+  const methodEl = document.getElementById('endpointMethod');
+const endpointEl = document.getElementById('endpoint');
+
+
+methodEl.textContent = endpoint.method || 'POST';
+methodEl.className = `method-badge ${endpoint.method}`;
+
+endpointEl.textContent = endpoint.endpoint || '/';
+
+  const requestBodyDiv = document.getElementById('requestBody');
+  const requestBodyFields = document.getElementById('requestBodyFields');
+  requestBodyFields.innerHTML = '';
+
+  if (endpoint.requestBody.length > 0) {
+    requestBodyDiv.style.display = 'block';
+    endpoint.requestBody.forEach(field => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${field.field}</td><td>${field.type}</td>`;
+      requestBodyFields.appendChild(row);
+    });
+  } else {
+    requestBodyDiv.style.display = 'none';
+  }
+
+  // Update Responses
+  const responsesDiv = document.getElementById('responses');
+  const responseList = document.getElementById('responseList');
+  responseList.innerHTML = '';
+
+  if (endpoint.responses.length > 0) {
+    responsesDiv.style.display = 'block';
+    endpoint.responses.forEach(resp => {
+      const div = document.createElement('div');
+      div.textContent = `${resp.code} ${resp.message}`;
+      div.style.color = resp.type === 'success' ? 'green' : 'red';
+      div.style.marginBottom = '5px';
+      responseList.appendChild(div);
+    });
+  } else {
+    responsesDiv.style.display = 'none';
+  }
+}
+</script>
+
+
+</body>
+</html>
