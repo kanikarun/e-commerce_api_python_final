@@ -41,7 +41,7 @@
       min-height: calc(100vh - 40px);
     }
 
-    /* Sidebar Styles */
+
     .sidebar {
       background: white;
       border-radius: 12px;
@@ -115,7 +115,7 @@
       color: var(--dark);
     }
 
-    /* Main Content Styles */
+
     .main-content {
       background: white;
       border-radius: 12px;
@@ -125,7 +125,7 @@
       flex-direction: column;
     }
 
-    /* Tabs Header */
+
     .tabs-header {
       display: flex;
       background: var(--light);
@@ -166,7 +166,6 @@
       background: var(--primary);
     }
 
-    /* Form Content */
     .form-content {
       padding: 40px;
       flex: 1;
@@ -187,7 +186,7 @@
       font-size: 15px;
     }
 
-    /* Form Styles */
+
     .form-group {
       margin-bottom: 25px;
     }
@@ -241,7 +240,7 @@
       padding-right: 40px;
     }
 
-    /* Action Buttons */
+
     .action-buttons {
       display: flex;
       gap: 15px;
@@ -283,7 +282,7 @@
       background: #e2e8f0;
     }
 
-    /* Divider */
+
     .divider {
       height: 1px;
       background: var(--border);
@@ -302,7 +301,7 @@
       background: var(--border);
     }
 
-    /* Response Panel */
+
     .response-panel {
       margin-top: 30px;
       padding: 25px;
@@ -338,7 +337,7 @@
       overflow-x: auto;
     }
 
-    /* Responsive Design */
+
     @media (max-width: 992px) {
       .container {
         grid-template-columns: 1fr;
@@ -373,7 +372,7 @@
       }
     }
 
-    /* ===== DROPDOWN FIX ===== */
+
     .dropdown-container {
       position: relative;
     }
@@ -415,16 +414,16 @@
   margin-left: auto;
 }
 
-/* Main content wrapper */
+
 .main-content {
     min-width: 800px;
-    margin: 0 auto; /* Center horizontally */
+    margin: 0 auto;
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #333;
 }
 
-/* Form content box */
+
 .form-content {
     background-color: #fff;
     border-radius: 8px;
@@ -432,7 +431,7 @@
     padding: 25px;
 }
 
-/* Form header */
+
 .form-header h2 {
     font-size: 24px;
     font-weight: 600;
@@ -446,7 +445,7 @@
     margin-bottom: 20px;
 }
 
-/* API sections */
+
 .api-section {
     margin-top: 30px;
 }
@@ -459,7 +458,7 @@
     padding-bottom: 5px;
 }
 
-/* Table styling */
+
 .api-table {
     width: 100%;
     border-collapse: collapse;
@@ -478,7 +477,7 @@
     font-weight: 600;
 }
 
-/* Response messages */
+
 #responseList .success {
     background-color: #e6f4ea;
     color: #2a7a32;
@@ -497,10 +496,10 @@
     border-left: 4px solid #b92c28;
 }
 
-/* Hide elements initially (optional) */
+
 #requestBody,
 #responses {
-    display: none; /* Controlled by JS */
+    display: none;
 }
 
 .method {
@@ -514,19 +513,19 @@
 
 }
 .method-badge.POST {
-  background-color: #007bff; /* blue */
+  background-color: #007bff;
 }
 .method-badge.GET {
-  background-color: #28a745; /* green */
+  background-color: #28a745;
 }
 
 .method-badge.PUT {
-  background-color: #ffc107; /* yellow */
+  background-color: #ffc107;
   color: black;
 }
 
 .method-badge.DELETE {
-  background-color: #dc3545; /* red */
+  background-color: #dc3545;
 }
 
 
