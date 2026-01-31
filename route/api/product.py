@@ -19,21 +19,20 @@ def allowed_file(filename):
 def get_image_url(image):
     if not image:
         return None
-
-    # remove old localhost URLs if embedded
-    image = image.replace("http://127.0.0.1:5000/uploads/", "")
-    image = image.replace("http://localhost:5000/uploads/", "")
-
-    # if already full correct URL
-    if image.startswith("https://ecomapi.kanika.lol/uploads/"):
-        return image
-
-    # ensure only filename remains
-    if "/uploads/" in image:
-        image = image.split("/uploads/")[-1]
-
-    return request.host_url.rstrip('/') + f"/uploads/{image}"
-
+    if image.startswith("http"):
+        # Remove old localhost URLs if embedded
+        image = image.replace("http://127.0.0.1:5000/uploads/", "")
+        image = image.replace("http://localhost:5000/uploads/", "")
+        # If already a full correct URL, return it
+        if image.startswith("https://ecomapi.kanika.lol/uploads/"):
+            return image
+        # Ensure only filename remains
+        if "/uploads/" in image:
+            image = image.split("/uploads/")[-1]
+        return request.host_url.rstrip('/') + f"/uploads/{image}"
+    else:
+        # Assume it's a filename or relative path; prepend /uploads/
+        return request.host_url.rstrip('/') + f"/uploads/{image}"
 
 # admin panel
 @app.post('/admin/product/create')
