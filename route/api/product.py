@@ -25,9 +25,6 @@ def get_image_url(image):
     if image.startswith("https://") and "/static/uploads/" in image:
         return image
 
-    # 🔥 FIX OLD LOCAL URLs
-    image = image.replace("http://localhost:5000/uploads/", "")
-
     # 🔥 FIX OLD PATH FORMATS
     image = image.replace("static/uploads/", "")
     image = image.replace("/uploads/", "")
