@@ -8,9 +8,11 @@ from app import app,db
 from flask import request, jsonify, send_from_directory, url_for
 from model import Category, Product
 
-UPLOAD_FOLDER = r'D:\SU33\ADV Python\Final\ecom_api\uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -247,9 +249,8 @@ def update_product():
         filename = secure_filename(image_file.filename)
         unique_filename = f"{uuid.uuid4().hex}_{filename}"
         save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        image_file.save(save_path)
-
-        product.image = request.host_url.rstrip('/') + f"/uploads/{unique_filename}"
+        image_url = request.form.get("image_url")
+        product.image = image_url
 
     db.session.commit()
 
@@ -425,9 +426,6 @@ def delete_product():
 
     return jsonify({'message': 'Product deleted successfully'}), 200
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)\
 
 
 @app.get('/admin/product/list')
