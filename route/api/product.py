@@ -26,7 +26,6 @@ def get_image_url(image):
         return image
 
     # 🔥 FIX OLD LOCAL URLs
-    image = image.replace("http://127.0.0.1:5000/uploads/", "")
     image = image.replace("http://localhost:5000/uploads/", "")
 
     # 🔥 FIX OLD PATH FORMATS
