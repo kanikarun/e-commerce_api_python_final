@@ -5,7 +5,7 @@ import uuid
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from werkzeug.utils import secure_filename
 from app import app,db
-from flask import request, jsonify, send_from_directory
+from flask import request, jsonify, send_from_directory, url_for
 from model import Category, Product
 
 UPLOAD_FOLDER = r'D:\SU33\ADV Python\Final\ecom_api\uploads'
@@ -14,6 +14,28 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def get_image_url(image):
+    if not image:
+        return None
+
+    # If already correct full URL
+    if image.startswith("https://") and "/static/uploads/" in image:
+        return image
+
+    # 🔥 FIX OLD LOCAL URLs
+    image = image.replace("http://127.0.0.1:5000/uploads/", "")
+    image = image.replace("http://localhost:5000/uploads/", "")
+
+    # 🔥 FIX OLD PATH FORMATS
+    image = image.replace("static/uploads/", "")
+    image = image.replace("/uploads/", "")
+    image = image.replace("uploads/", "")
+
+    return url_for(
+        "static",
+        filename=f"uploads/{image}",
+        _external=True
+    )
 
 
 # admin panel
@@ -418,24 +440,19 @@ def admin_get_products():
 
     product_list = []
     for p in products:
-        image_url = None
-        if p.image:
-            if p.image.startswith("http"):
-                image_url = p.image
-            else:
-                image_url = request.host_url.rstrip('/') + p.image
+        image_url = get_image_url(p.image)
 
         product_list.append({
-            'id': p.id,
-            'title': p.title,
-            'price': p.price,
-            'stock': p.stock,
-            'description': p.description,
-            'cost': p.cost,
-            'category': p.category.name,
-            'image': image_url
+    'id': p.id,
+    'title': p.title,
+    'price': p.price,
+    'stock': p.stock,
+    'description': p.description,
+    'cost': p.cost,
+    'category': p.category.name,
+    'image': image_url
+})
 
-        })
 
     return jsonify(product_list)
 
@@ -498,12 +515,7 @@ def get_products_by_category_name():
 
     product_list = []
     for p in products:
-        image_url = None
-        if p.image:
-            if p.image.startswith("http"):
-                image_url = p.image
-            else:
-                image_url = request.host_url.rstrip('/') + p.image
+        image_url = get_image_url(p.image)
 
         product_list.append({
             'id': p.id,
@@ -513,7 +525,7 @@ def get_products_by_category_name():
             'description': p.description,
             'category': p.category.name,
             'image': image_url,
-            'cost': p.cost,
+            'cost': p.cost
         })
 
     return jsonify(product_list), 200
