@@ -19,22 +19,20 @@ def allowed_file(filename):
 def get_image_url(image):
     if not image:
         return None
-    return request.host_url.rstrip('/') + f"/uploads/{image}"
 
-    # If already correct full URL
-    if image.startswith("https://") and "/static/uploads/" in image:
+    # remove old localhost URLs if embedded
+    image = image.replace("http://127.0.0.1:5000/uploads/", "")
+    image = image.replace("http://localhost:5000/uploads/", "")
+
+    # if already full correct URL
+    if image.startswith("https://ecomapi.kanika.lol/uploads/"):
         return image
 
-    # 🔥 FIX OLD PATH FORMATS
-    image = image.replace("static/uploads/", "")
-    image = image.replace("/uploads/", "")
-    image = image.replace("uploads/", "")
+    # ensure only filename remains
+    if "/uploads/" in image:
+        image = image.split("/uploads/")[-1]
 
-    return url_for(
-        "static",
-        filename=f"uploads/{image}",
-        _external=True
-    )
+    return request.host_url.rstrip('/') + f"/uploads/{image}"
 
 
 # admin panel
