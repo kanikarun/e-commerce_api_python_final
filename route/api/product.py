@@ -8,9 +8,8 @@ from app import app,db
 from flask import request, jsonify, send_from_directory, url_for
 from model import Category, Product
 
-UPLOAD_FOLDER = os.path.join(app.root_path, "static/uploads")
+UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
