@@ -1,34 +1,24 @@
 import json
-import os
-import uuid
 
-from flask_jwt_extended import get_jwt_identity, jwt_required
-from werkzeug.utils import secure_filename
-from app import app,db
-from flask import request, jsonify, send_from_directory, url_for
-from model import Category, Product
+from flask import request, jsonify, url_for
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-UPLOAD_FOLDER = "/tmp/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+from app import app, db
+from model import Product, Category
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+# =====================================================
+# IMAGE HELPER (URL ONLY)
+# =====================================================
 
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 def get_image_url(image):
     if not image:
         return None
 
-    # If already correct full URL
-    if image.startswith("https://") and "/static/uploads/" in image:
+    if image.startswith("http"):
         return image
 
-    # 🔥 FIX OLD LOCAL URLs
     image = image.replace("http://127.0.0.1:5000/uploads/", "")
     image = image.replace("http://localhost:5000/uploads/", "")
-
-    # 🔥 FIX OLD PATH FORMATS
     image = image.replace("static/uploads/", "")
     image = image.replace("/uploads/", "")
     image = image.replace("uploads/", "")
@@ -40,87 +30,67 @@ def get_image_url(image):
     )
 
 
-# admin panel
-@app.post('/admin/product/create')
+# =====================================================
+# AUTH HELPERS
+# =====================================================
+
+def require_admin():
+    user = json.loads(get_jwt_identity())
+    if user.get("role") != "admin":
+        return None, (jsonify({"message": "Admin access required"}), 403)
+    return user, None
+
+
+def serialize_product(p):
+    return {
+        "id": p.id,
+        "title": p.title,
+        "price": p.price,
+        "cost": p.cost,
+        "stock": p.stock,
+        "description": p.description,
+        "category": p.category.name if p.category else None,
+        "category_id": p.category_id,
+        "image": get_image_url(p.image),
+    }
+
+
+# =====================================================
+# ADMIN ROUTES
+# =====================================================
+
+@app.post("/admin/product/create")
 @jwt_required()
 def create_product():
-    current_user = json.loads(get_jwt_identity())
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Admin access required'}), 403
+    _, error = require_admin()
+    if error:
+        return error
 
-    title = request.form.get('title')
-    price = request.form.get('price')
-    cost = request.form.get('cost')
-    stock = request.form.get('stock')
-    description = request.form.get('description')
-    category_id = request.form.get('category_id')
+    title = request.form.get("title", "").strip()
+    price = request.form.get("price")
+    cost = request.form.get("cost")
+    stock = request.form.get("stock")
+    category_id = request.form.get("category_id")
+    description = request.form.get("description")
+    image_url = request.form.get("image_url")  # ✅ URL ONLY
 
-    missing_fields = []
-    invalid_fields = []
+    if not all([title, price, cost, stock, category_id]):
+        return jsonify({"message": "Missing required fields"}), 400
 
-    if not title or title.strip() == "":
-        missing_fields.append('title')
-    else:
-        existing_product = Product.query.filter_by(title=title.strip()).first()
-        if existing_product:
-            return jsonify({'message': f"A product with the title '{title}' already exists"}), 400
-    if not price or str(price).strip() == "":
-        missing_fields.append('price')
-    if not cost or str(cost).strip() == "":
-        missing_fields.append('cost')
-    if not stock or str(stock).strip() == "":
-        missing_fields.append('stock')
-    if not category_id or str(category_id).strip() == "":
-        missing_fields.append('category_id')
-
-    if price and str(price).strip() != "":
-        try:
-            price = float(price)
-        except (ValueError, TypeError):
-            invalid_fields.append('price')
-
-    if cost and str(cost).strip() != "":
-        try:
-            cost = float(cost)
-        except (ValueError, TypeError):
-            invalid_fields.append('cost')
+    if Product.query.filter_by(title=title).first():
+        return jsonify({"message": "Product already exists"}), 400
 
     try:
+        price = float(price)
+        cost = float(cost)
         stock = int(stock)
-    except (ValueError, TypeError):
-        return jsonify({'message': 'Stock must be an integer'}), 400
-
-    messages = []
-
-    if missing_fields:
-        if len(missing_fields) == 1:
-            messages.append(f"Missing required field: {missing_fields[0]}")
-        else:
-            messages.append("Missing required fields: " + ', '.join(missing_fields[:-1]) + " and " + missing_fields[-1])
-
-    if invalid_fields:
-        if len(invalid_fields) == 1:
-            messages.append(f"{invalid_fields[0]} must be a number")
-        else:
-            messages.append(', '.join(invalid_fields[:-1]) + " and " + invalid_fields[-1] + " must be numbers")
-
-    if messages:
-        return jsonify({'message': '; '.join(messages)}), 400
+        category_id = int(category_id)
+    except ValueError:
+        return jsonify({"message": "Invalid numeric values"}), 400
 
     category = Category.query.get(category_id)
     if not category:
-        return jsonify({'message': 'Category not found'}), 404
-
-    image_file = request.files.get('image')
-    if image_file and allowed_file(image_file.filename):
-        filename = secure_filename(image_file.filename)
-        unique_filename = f"{uuid.uuid4().hex}_{filename}"
-        save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        image_file.save(save_path)
-        image_url = request.host_url.rstrip('/') + f"/uploads/{unique_filename}"
-    else:
-        image_url = None
-
+        return jsonify({"message": "Category not found"}), 404
 
     product = Product(
         title=title,
@@ -129,403 +99,139 @@ def create_product():
         stock=stock,
         description=description,
         image=image_url,
-        category_id=category_id
+        category_id=category_id,
     )
 
     db.session.add(product)
     db.session.commit()
 
     return jsonify({
-        'message': 'Product created successfully',
-        'product': {
-            'id': product.id,
-            'title': product.title,
-            'cost': product.cost,
-            'price': product.price,
-            'stock': product.stock,
-            'description': product.description,
-            'image': product.image,
-            'category': category.name
-
-        }
+        "message": "Product created successfully",
+        "product": serialize_product(product),
     }), 201
 
-@app.put('/admin/product/update')
-@jwt_required()
-def update_product():
-    current_user = json.loads(get_jwt_identity())
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Admin access required'}), 403
 
-    product_id = request.form.get('id')
-    if not product_id:
-        return jsonify({'message': 'Product ID is required'}), 400
+@app.put("/admin/product/update/<int:id>")
+@jwt_required()
+def update_product(id):
+    _, error = require_admin()
+    if error:
+        return error
+
+    product = Product.query.get(id)
+    if not product:
+        return jsonify({"message": "Product not found"}), 404
+
+    title = request.form.get("title")
+    price = request.form.get("price")
+    cost = request.form.get("cost")
+    stock = request.form.get("stock")
+    category_id = request.form.get("category_id")
+    description = request.form.get("description")
+    image_url = request.form.get("image_url")
+
+    if title:
+        title = title.strip()
+        exists = Product.query.filter(
+            Product.title == title,
+            Product.id != id
+        ).first()
+        if exists:
+            return jsonify({"message": "Product title already exists"}), 400
+        product.title = title
 
     try:
-        product_id = int(product_id)
-    except ValueError:
-        return jsonify({'message': 'Product ID must be an integer'}), 400
-
-    product = Product.query.get(product_id)
-    if not product:
-        return jsonify({'message': 'Product not found'}), 404
-
-    title = request.form.get('title')
-    if title:
-        title_clean = title.strip()
-        existing_product = Product.query.filter(
-            Product.title.ilike(title_clean),
-            Product.id != product_id
-        ).first()
-
-        if existing_product:
-            return jsonify({'message': f"A product with the title '{title_clean}' already exists"}), 400
-
-        product.title = title_clean
-
-
-    title = request.form.get('title')
-    price = request.form.get('price')
-    cost = request.form.get('cost')
-    stock = request.form.get('stock')
-    description = request.form.get('description')
-    category_id = request.form.get('category_id')
-
-    invalid_fields = []
-
-    if price is not None:
-        try:
-            price = float(price)
-            product.price = price
-        except:
-            invalid_fields.append('price')
-
-    if cost is not None:
-        try:
-            cost = float(cost)
-            product.cost = cost
-        except:
-            invalid_fields.append('cost')
-
-    if stock is not None:
-        try:
-            stock = int(stock)
-            product.stock = stock
-        except (ValueError, TypeError):
-            return jsonify({'message': 'stock must be an integer'}), 400
-
-    if category_id is not None:
-        try:
+        if price is not None:
+            product.price = float(price)
+        if cost is not None:
+            product.cost = float(cost)
+        if stock is not None:
+            product.stock = int(stock)
+        if category_id is not None:
             category_id = int(category_id)
-        except:
-            invalid_fields.append('category_id')
-        else:
-            category = Category.query.get(category_id)
-            if not category:
-                return jsonify({'message': 'Category not found'}), 404
+            if not Category.query.get(category_id):
+                return jsonify({"message": "Category not found"}), 404
             product.category_id = category_id
-
-    if invalid_fields:
-        return jsonify({
-            'message': ', '.join(invalid_fields) + ' must be a number'
-        }), 400
-
-    if title is not None and title.strip() != "":
-        product.title = title
+    except ValueError:
+        return jsonify({"message": "Invalid numeric values"}), 400
 
     if description is not None:
         product.description = description
 
-    image_file = request.files.get('image')
-    if image_file and allowed_file(image_file.filename):
-
-        if product.image:
-            old_filename = product.image.split('/uploads/')[-1]
-            old_path = os.path.join(UPLOAD_FOLDER, old_filename)
-
-            if os.path.exists(old_path):
-                os.remove(old_path)
-
-        filename = secure_filename(image_file.filename)
-        unique_filename = f"{uuid.uuid4().hex}_{filename}"
-        save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        image_url = request.form.get("image_url")
+    if image_url is not None:
         product.image = image_url
 
     db.session.commit()
 
     return jsonify({
-        'message': 'Product updated successfully',
-        'product': {
-            'id': product.id,
-            'title': product.title,
-            'price': product.price,
-            'cost': product.cost,
-            'stock': product.stock,
-            'image': product.image,
-            'description': product.description,
-            'category': product.category.name if product.category else None
-        }
+        "message": "Product updated successfully",
+        "product": serialize_product(product),
     }), 200
 
-@app.put('/admin/product/update/<int:id>')
-@jwt_required()
-def update_product_by_id(id):
 
-    current_user = json.loads(get_jwt_identity())
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Admin access required'}), 403
+@app.delete("/admin/product/delete/<int:id>")
+@jwt_required()
+def delete_product(id):
+    _, error = require_admin()
+    if error:
+        return error
 
     product = Product.query.get(id)
     if not product:
-        return jsonify({'message': 'Product not found'}), 404
+        return jsonify({"message": "Product not found"}), 404
 
-    title = request.form.get('title')
-    if title:
-        title_clean = title.strip()
-        existing_product = Product.query.filter(
-            Product.title.ilike(title_clean),
-        ).first()
-
-        if existing_product:
-            return jsonify({'message': f"A product with the title '{title_clean}' already exists"}), 400
-
-        product.title = title_clean
-
-    title = request.form.get('title')
-    price = request.form.get('price')
-    cost = request.form.get('cost')
-    stock = request.form.get('stock')
-    description = request.form.get('description')
-    category_id = request.form.get('category_id')
-
-    messages = []
-
-    if price is not None:
-        try:
-            price = float(price)
-            product.price = price
-        except (ValueError, TypeError):
-            messages.append('price must be a number')
-
-    if cost is not None:
-        try:
-            cost = float(cost)
-            product.cost = cost
-        except (ValueError, TypeError):
-            messages.append('cost must be a number')
-
-    if stock is not None:
-        try:
-            stock = int(stock)
-            product.stock = stock
-        except (ValueError, TypeError):
-            messages.append('stock must be an integer')
-
-    if category_id is not None:
-        try:
-            category_id = int(category_id)
-            category = Category.query.get(category_id)
-            if not category:
-                return jsonify({'message': 'Category not found'}), 404
-            product.category_id = category_id
-        except (ValueError, TypeError):
-            messages.append('category_id must be an integer')
-
-    if messages:
-        return jsonify({'message': '; '.join(messages)}), 400
-
-    if title is not None and title.strip() != "":
-        product.title = title
-    if description is not None:
-        product.description = description
-
-    image_file = request.files.get('image')
-    if image_file and allowed_file(image_file.filename):
-        # Delete old image
-        if product.image:
-            old_filename = product.image.split('/uploads/')[-1]
-            old_path = os.path.join(UPLOAD_FOLDER, old_filename)
-            if os.path.exists(old_path):
-                os.remove(old_path)
-
-        filename = secure_filename(image_file.filename)
-        unique_filename = f"{uuid.uuid4().hex}_{filename}"
-        save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        image_file.save(save_path)
-        product.image = request.host_url.rstrip('/') + f"/uploads/{unique_filename}"
-
+    db.session.delete(product)
     db.session.commit()
+
+    return jsonify({"message": "Product deleted successfully"}), 200
+
+
+@app.get("/admin/product/list")
+@jwt_required()
+def admin_product_list():
+    _, error = require_admin()
+    if error:
+        return error
+
+    products = Product.query.all()
+    return jsonify({
+        "total": len(products),
+        "products": [serialize_product(p) for p in products],
+    }), 200
+
+
+# =====================================================
+# PUBLIC ROUTES
+# =====================================================
+
+@app.get("/product/list")
+def product_list():
+    products = Product.query.all()
+    return jsonify({
+        "total": len(products),
+        "products": [serialize_product(p) for p in products],
+    }), 200
+
+
+@app.get("/product/<int:id>")
+def product_detail(id):
+    product = Product.query.get(id)
+    if not product:
+        return jsonify({"message": "Product not found"}), 404
+
+    return jsonify({"product": serialize_product(product)}), 200
+
+
+@app.get("/product/category/<int:category_id>")
+def product_by_category(category_id):
+    category = Category.query.get(category_id)
+    if not category:
+        return jsonify({"message": "Category not found"}), 404
+
+    products = Product.query.filter_by(category_id=category_id).all()
 
     return jsonify({
-        'message': 'Product updated successfully',
-        'product': {
-            'id': product.id,
-            'title': product.title,
-            'price': product.price,
-            'cost': product.cost,
-            'stock': product.stock,
-            'description': product.description,
-            'image': product.image,
-            'category': product.category.name if product.category else None
-        }
+        "category": category.name,
+        "total": len(products),
+        "products": [serialize_product(p) for p in products],
     }), 200
-
-@app.delete('/admin/product/delete/<int:id>')
-@jwt_required()
-def delete_product_by_id(id):
-
-    current_user = json.loads(get_jwt_identity())
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Admin access required'}), 403
-
-    product = Product.query.get(id)
-    if not product:
-        return jsonify({'message': 'Product not found'}), 404
-
-    if product.image:
-        old_filename = product.image.split('/uploads/')[-1]
-        old_path = os.path.join(UPLOAD_FOLDER, old_filename)
-        if os.path.exists(old_path):
-            os.remove(old_path)
-
-    db.session.delete(product)
-    db.session.commit()
-
-    return jsonify({'message': 'Product deleted successfully'}), 200
-
-@app.delete('/admin/product/delete')
-@jwt_required()
-def delete_product():
-
-    current_user = json.loads(get_jwt_identity())
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Admin access required'}), 403
-
-    product_id = request.form.get('id') or request.json.get('id')
-    if not product_id:
-        return jsonify({'message': 'Product ID is required'}), 400
-
-    try:
-        product_id = int(product_id)
-    except ValueError:
-        return jsonify({'message': 'Product ID must be an integer'}), 400
-
-    product = Product.query.get(product_id)
-    if not product:
-        return jsonify({'message': 'Product not found'}), 404
-
-    if product.image:
-        old_filename = product.image.split('/uploads/')[-1]
-        old_path = os.path.join(UPLOAD_FOLDER, old_filename)
-        if os.path.exists(old_path):
-            os.remove(old_path)
-
-    db.session.delete(product)
-    db.session.commit()
-
-    return jsonify({'message': 'Product deleted successfully'}), 200
-
-
-
-@app.get('/admin/product/list')
-@jwt_required()
-def admin_get_products():
-    current_user = json.loads(get_jwt_identity())
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Admin access required'}), 403
-    products = Product.query.all()
-
-    product_list = []
-    for p in products:
-        image_url = get_image_url(p.image)
-
-        product_list.append({
-    'id': p.id,
-    'title': p.title,
-    'price': p.price,
-    'stock': p.stock,
-    'description': p.description,
-    'cost': p.cost,
-    'category': p.category.name,
-    'image': image_url
-})
-
-
-    return jsonify(product_list)
-
-
-
-
-# Front Panel
-@app.get('/product/list')
-def get_products():
-    products = Product.query.all()
-
-    product_list = []
-    for p in products:
-        image_url = None
-        if p.image:
-            if p.image.startswith("http"):
-                image_url = p.image
-            else:
-                image_url = request.host_url.rstrip('/') + p.image
-
-        product_list.append({
-            'id': p.id,
-            'title': p.title,
-            'price': p.price,
-            'stock': p.stock,
-            'description': p.description,
-            'cost': p.cost,
-            'category': p.category.name,
-            'image': image_url
-
-        })
-
-    return jsonify(product_list)
-
-@app.get('/product/list/category')
-def get_products_by_category_name():
-    data = request.get_json()
-
-    category_name = data.get('category_name') if data else None
-    if not category_name:
-        return {"message": "category_name is required"}, 400
-
-    category = Category.query.filter_by(name=category_name).first()
-    if not category:
-        return {
-            "message": "Category not found",
-        }, 404
-
-    products = (
-        Product.query
-        .join(Category)
-        .filter(Category.name == category_name)
-        .all()
-    )
-
-    if not products:
-        return {
-            "message": "No products found in this category",
-        }, 200
-
-    product_list = []
-    for p in products:
-        image_url = get_image_url(p.image)
-
-        product_list.append({
-            'id': p.id,
-            'title': p.title,
-            'price': p.price,
-            'stock': p.stock,
-            'description': p.description,
-            'category': p.category.name,
-            'image': image_url,
-            'cost': p.cost
-        })
-
-    return jsonify(product_list), 200
-
-
