@@ -8,32 +8,40 @@ from app import app,db
 from flask import request, jsonify, send_from_directory, url_for
 from model import Category, Product
 
-UPLOAD_FOLDER = "/tmp/uploads"
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 def get_image_url(image):
     if not image:
         return None
+
+    # If it's a full URL starting with http
     if image.startswith("http"):
         # Remove old localhost URLs if embedded
         image = image.replace("http://127.0.0.1:5000/uploads/", "")
         image = image.replace("http://localhost:5000/uploads/", "")
-        # If already a full correct URL, return it
+
+        # If already the correct production URL, return as-is
         if image.startswith("https://ecomapi.kanika.lol/uploads/"):
             return image
-        # Ensure only filename remains
+
+        # Extract filename if /uploads/ is present
         if "/uploads/" in image:
             image = image.split("/uploads/")[-1]
-        return request.host_url.rstrip('/') + f"/uploads/{image}"
-    else:
-        # Assume it's a filename or relative path; prepend /uploads/
+
+        # Build URL with current host
         return request.host_url.rstrip('/') + f"/uploads/{image}"
 
+    # If not a full URL, assume it's a filename or relative path; prepend /uploads/
+    # Strip any leading slashes to avoid double slashes
+    image = image.lstrip('/')
+    return request.host_url.rstrip('/') + f"/uploads/{image}"
 # admin panel
 @app.post('/admin/product/create')
 @jwt_required()
@@ -463,13 +471,8 @@ def get_products():
 
     product_list = []
     for p in products:
-        image_url = None
-        if p.image:
-            if p.image.startswith("http"):
-                image_url = get_image_url(p.image)
+        image_url = get_image_url(p.image)
 
-            else:
-                image_url = request.host_url.rstrip('/') + p.image
 
         product_list.append({
             'id': p.id,
